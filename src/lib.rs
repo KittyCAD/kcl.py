@@ -295,6 +295,15 @@ fn lint(code: String) -> PyResult<Vec<Discovered>> {
 /// The kcl python module.
 #[pymodule]
 fn kcl(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Add our types to the module.
+    m.add_class::<ImageFormat>()?;
+    m.add_class::<ExportFile>()?;
+    m.add_class::<FileExportFormat>()?;
+    m.add_class::<UnitLength>()?;
+    m.add_class::<FormatOptions>()?;
+    m.add_class::<Discovered>()?;
+
+    // Add our functions to the module.
     m.add_function(wrap_pyfunction!(execute_and_snapshot, m)?)?;
     m.add_function(wrap_pyfunction!(execute_and_export, m)?)?;
     m.add_function(wrap_pyfunction!(format, m)?)?;
