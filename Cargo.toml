@@ -1,0 +1,19 @@
+[package]
+name = "kcl"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "kcl"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1.0.86"
+#kcl-lib = {git = "https://github.com/kittycad/modeling-app", branch = "main", features = ["pyo3"]}
+kcl-lib = {path = "../modeling-app/src/wasm-lib/kcl", features = ["pyo3"]}
+kittycad = "0.3.5"
+pyo3 = { version = "0.21.1", features = ["serde", "experimental-async"] }
+reqwest = "0.11.0"
+serde = "1.0.203"
+serde_json = "1.0.117"
