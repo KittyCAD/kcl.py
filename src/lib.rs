@@ -2,6 +2,7 @@ use anyhow::Result;
 use kcl_lib::{
     ast::types::FormatOptions,
     executor::{ExecutorContext, ExecutorSettings},
+    lint::{checks, Discovered},
     settings::types::UnitLength,
 };
 use pyo3::{pyclass, pyfunction, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr, PyResult};
@@ -279,12 +280,24 @@ fn format(code: String, format_options: FormatOptions) -> PyResult<String> {
 }
 
 /// Lint the kcl code.
+#[pyfunction]
+fn lint(code: String) -> PyResult<Vec<Discovered>> {
+    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
+    let parser = kcl_lib::parser::Parser::new(tokens);
+    let program = parser.ast().map_err(PyErr::from)?;
+    let lints = program
+        .lint(checks::lint_variables)
+        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
 
-/// A Python module implemented in Rust.
+    Ok(lints)
+}
+
+/// The kcl python module.
 #[pymodule]
 fn kcl(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(execute_and_snapshot, m)?)?;
     m.add_function(wrap_pyfunction!(execute_and_export, m)?)?;
     m.add_function(wrap_pyfunction!(format, m)?)?;
+    m.add_function(wrap_pyfunction!(lint, m)?)?;
     Ok(())
 }
