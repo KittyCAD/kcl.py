@@ -1,5 +1,6 @@
 use anyhow::Result;
 use kcl_lib::{
+    ast::types::FormatOptions,
     executor::{ExecutorContext, ExecutorSettings},
     settings::types::UnitLength,
 };
@@ -267,16 +268,15 @@ async fn execute_and_export(
 }
 
 /// Format the kcl code.
-/*#[pyfunction]
-async fn format(program: PyDict, units: UnitLength) -> PyResult<PyDict> {
-    let program: Program =
-        from_dict(&program).map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-    let ctx = new_context(units)
-        .await
-        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-    let memory = ctx.run(program, None).await.map_err(PyErr::from)?;
-    Ok(to_dict(memory).map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?)
-}*/
+#[pyfunction]
+fn format(code: String, format_options: FormatOptions) -> PyResult<String> {
+    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
+    let parser = kcl_lib::parser::Parser::new(tokens);
+    let program = parser.ast().map_err(PyErr::from)?;
+    let recasted = program.recast(&format_options, 0);
+
+    Ok(recasted)
+}
 
 /// Lint the kcl code.
 
@@ -285,5 +285,6 @@ async fn format(program: PyDict, units: UnitLength) -> PyResult<PyDict> {
 fn kcl(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(execute_and_snapshot, m)?)?;
     m.add_function(wrap_pyfunction!(execute_and_export, m)?)?;
+    m.add_function(wrap_pyfunction!(format, m)?)?;
     Ok(())
 }
