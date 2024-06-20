@@ -1,11 +1,10 @@
 use anyhow::Result;
 use kcl_lib::{
-    ast::types::FormatOptions,
     executor::{ExecutorContext, ExecutorSettings},
     lint::{checks, Discovered},
     settings::types::UnitLength,
 };
-use pyo3::{pyclass, pyfunction, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr, PyResult};
+use pyo3::{pyclass, pyfunction, pymethods, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr, PyResult};
 use serde::{Deserialize, Serialize};
 
 fn tokio() -> &'static tokio::runtime::Runtime {
@@ -59,6 +58,19 @@ impl From<kittycad::types::RawFile> for ExportFile {
             contents: file.contents,
             name: file.name,
         }
+    }
+}
+
+#[pymethods]
+impl ExportFile {
+    #[getter]
+    fn contents(&self) -> Vec<u8> {
+        self.contents.clone()
+    }
+
+    #[getter]
+    fn name(&self) -> String {
+        self.name.clone()
     }
 }
 
@@ -286,11 +298,11 @@ async fn execute_and_export(
 
 /// Format the kcl code.
 #[pyfunction]
-fn format(code: String, format_options: FormatOptions) -> PyResult<String> {
+fn format(code: String) -> PyResult<String> {
     let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
     let parser = kcl_lib::parser::Parser::new(tokens);
     let program = parser.ast().map_err(PyErr::from)?;
-    let recasted = program.recast(&format_options, 0);
+    let recasted = program.recast(&Default::default(), 0);
 
     Ok(recasted)
 }
@@ -316,7 +328,6 @@ fn kcl(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ExportFile>()?;
     m.add_class::<FileExportFormat>()?;
     m.add_class::<UnitLength>()?;
-    m.add_class::<FormatOptions>()?;
     m.add_class::<Discovered>()?;
 
     // Add our functions to the module.
