@@ -1,6 +1,6 @@
 [package]
 name = "zoo-kcl"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 repository = "https://github.com/kittycad/kcl.py"
 
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0.86"
-kcl-lib = {git = "https://github.com/kittycad/modeling-app", branch = "main", features = ["pyo3"]}
+kcl-lib = {version = "0.1.60", features = ["pyo3"]}
 kittycad = "0.3.5"
 pyo3 = { version = "0.21.1", features = ["serde", "experimental-async"] }
 reqwest = "0.11.0"
