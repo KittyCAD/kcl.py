@@ -1,6 +1,9 @@
 # kcl.py
 Python bindings to the rust kcl-lib crate.
 
+## Usage
+
+The [tests.py](tests/tests.py) file contains examples of how to use the library.
 
 ## Development
 
