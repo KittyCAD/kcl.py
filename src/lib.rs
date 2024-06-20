@@ -8,6 +8,12 @@ use kcl_lib::{
 use pyo3::{pyclass, pyfunction, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr, PyResult};
 use serde::{Deserialize, Serialize};
 
+fn tokio() -> &'static tokio::runtime::Runtime {
+    use std::sync::OnceLock;
+    static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
+    RT.get_or_init(|| tokio::runtime::Runtime::new().unwrap())
+}
+
 /// The variety of image formats snapshots may be exported to.
 #[derive(Serialize, Deserialize, PartialEq, Hash, Debug, Clone, Copy)]
 #[pyclass]
@@ -183,50 +189,55 @@ async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
 /// Execute the kcl code and snapshot it in a specific format.
 #[pyfunction]
 async fn execute_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
-    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-    let parser = kcl_lib::parser::Parser::new(tokens);
-    let program = parser.ast().map_err(PyErr::from)?;
-    let ctx = new_context(units)
+    tokio()
+        .spawn(async move {
+            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
+            let parser = kcl_lib::parser::Parser::new(tokens);
+            let program = parser.ast().map_err(PyErr::from)?;
+            let ctx = new_context(units)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
+            // Execute the program.
+            let _ = ctx.run(program, None).await?;
+
+            // Zoom to fit.
+            ctx.engine
+                .send_modeling_cmd(
+                    uuid::Uuid::new_v4(),
+                    kcl_lib::executor::SourceRange::default(),
+                    kittycad::types::ModelingCmd::ZoomToFit {
+                        object_ids: Default::default(),
+                        padding: 0.1,
+                    },
+                )
+                .await?;
+
+            // Send a snapshot request to the engine.
+            let resp = ctx
+                .engine
+                .send_modeling_cmd(
+                    uuid::Uuid::new_v4(),
+                    kcl_lib::executor::SourceRange::default(),
+                    kittycad::types::ModelingCmd::TakeSnapshot {
+                        format: image_format.into(),
+                    },
+                )
+                .await?;
+
+            let kittycad::types::OkWebSocketResponseData::Modeling {
+                modeling_response: kittycad::types::OkModelingCmdResponse::TakeSnapshot { data },
+            } = resp
+            else {
+                return Err(pyo3::exceptions::PyException::new_err(format!(
+                    "Unexpected response from engine: {:?}",
+                    resp
+                )));
+            };
+
+            Ok(data.contents.0)
+        })
         .await
-        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-    // Execute the program.
-    let _ = ctx.run(program, None).await?;
-
-    // Zoom to fit.
-    ctx.engine
-        .send_modeling_cmd(
-            uuid::Uuid::new_v4(),
-            kcl_lib::executor::SourceRange::default(),
-            kittycad::types::ModelingCmd::ZoomToFit {
-                object_ids: Default::default(),
-                padding: 0.1,
-            },
-        )
-        .await?;
-
-    // Send a snapshot request to the engine.
-    let resp = ctx
-        .engine
-        .send_modeling_cmd(
-            uuid::Uuid::new_v4(),
-            kcl_lib::executor::SourceRange::default(),
-            kittycad::types::ModelingCmd::TakeSnapshot {
-                format: image_format.into(),
-            },
-        )
-        .await?;
-
-    let kittycad::types::OkWebSocketResponseData::Modeling {
-        modeling_response: kittycad::types::OkModelingCmdResponse::TakeSnapshot { data },
-    } = resp
-    else {
-        return Err(pyo3::exceptions::PyException::new_err(format!(
-            "Unexpected response from engine: {:?}",
-            resp
-        )));
-    };
-
-    Ok(data.contents.0)
+        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?
 }
 
 /// Execute the kcl code and export it to a specific file format.
@@ -236,36 +247,41 @@ async fn execute_and_export(
     units: UnitLength,
     export_format: FileExportFormat,
 ) -> PyResult<Vec<ExportFile>> {
-    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-    let parser = kcl_lib::parser::Parser::new(tokens);
-    let program = parser.ast().map_err(PyErr::from)?;
-    let ctx = new_context(units)
+    tokio()
+        .spawn(async move {
+            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
+            let parser = kcl_lib::parser::Parser::new(tokens);
+            let program = parser.ast().map_err(PyErr::from)?;
+            let ctx = new_context(units)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
+            // Execute the program.
+            let _ = ctx.run(program, None).await?;
+
+            // This will not return until there are files.
+            let resp = ctx
+                .engine
+                .send_modeling_cmd(
+                    uuid::Uuid::new_v4(),
+                    kcl_lib::executor::SourceRange::default(),
+                    kittycad::types::ModelingCmd::Export {
+                        entity_ids: vec![],
+                        format: get_output_format(&export_format, units.into()),
+                    },
+                )
+                .await?;
+
+            let kittycad::types::OkWebSocketResponseData::Export { files } = resp else {
+                return Err(pyo3::exceptions::PyException::new_err(format!(
+                    "Unexpected response from engine: {:?}",
+                    resp
+                )));
+            };
+
+            Ok(files.into_iter().map(ExportFile::from).collect())
+        })
         .await
-        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-    // Execute the program.
-    let _ = ctx.run(program, None).await?;
-
-    // This will not return until there are files.
-    let resp = ctx
-        .engine
-        .send_modeling_cmd(
-            uuid::Uuid::new_v4(),
-            kcl_lib::executor::SourceRange::default(),
-            kittycad::types::ModelingCmd::Export {
-                entity_ids: vec![],
-                format: get_output_format(&export_format, units.into()),
-            },
-        )
-        .await?;
-
-    let kittycad::types::OkWebSocketResponseData::Export { files } = resp else {
-        return Err(pyo3::exceptions::PyException::new_err(format!(
-            "Unexpected response from engine: {:?}",
-            resp
-        )));
-    };
-
-    Ok(files.into_iter().map(ExportFile::from).collect())
+        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?
 }
 
 /// Format the kcl code.
