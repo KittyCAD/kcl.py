@@ -23,6 +23,7 @@ async def test_kcl_execute_and_snapshot():
         assert image_bytes is not None
         assert len(image_bytes) > 0
 
+
 @pytest.mark.asyncio
 async def test_kcl_execute_and_export():
     # Read from a file.
@@ -43,6 +44,7 @@ async def test_kcl_execute_and_export():
         assert contents is not None
         assert len(contents) > 0
 
+
 def test_kcl_format():
     # Read from a file.
     with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
@@ -53,6 +55,7 @@ def test_kcl_format():
         assert formatted_code is not None
         assert len(formatted_code) > 0
 
+
 def test_kcl_lint():
     # Read from a file.
     with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
@@ -62,5 +65,3 @@ def test_kcl_lint():
         lints = kcl.lint(code)
         assert lints is not None
         assert len(lints) > 0
-
-
