@@ -36,10 +36,12 @@ async def test_kcl_execute_and_export():
         assert files is not None
         assert len(files) > 0
         assert files[0] is not None
-        assert files[0].name() is not None
-        assert len(files[0].name()) > 0
-        assert files[0].contents() is not None
-        assert len(files[0].contents()) > 0
+        name = files[0].name
+        contents = files[0].contents
+        assert name is not None
+        assert len(name) > 0
+        assert contents is not None
+        assert len(contents) > 0
 
 def test_kcl_format():
     # Read from a file.
