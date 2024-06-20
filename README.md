@@ -28,3 +28,11 @@ There are four main commands:
 `pyo3` bindings are automatically detected. 
 `maturin` doesn't need extra configuration files and doesn't clash with an existing setuptools-rust or milksnake configuration.
 
+### Releasing a new version
+
+1. Make sure the `Cargo.toml` has the new version you want to release.
+2. Run `make tag` this is just an easy command for making a tag formatted
+   correctly with the version.
+3. Push the tag (the result of `make tag` gives instructions for this)
+4. Everything else is triggered from the tag push. Just make sure all the tests
+   pass on the `main` branch before making and pushing a new tag.
