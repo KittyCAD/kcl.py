@@ -72,7 +72,7 @@ jobs:
           name: wheels-macos-${{ matrix.platform.target }}
           path: dist
 
-  macos:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
