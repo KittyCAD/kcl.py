@@ -65,3 +65,11 @@ def test_kcl_lint():
         lints = kcl.lint(code)
         assert lints is not None
         assert len(lints) > 0
+        description = lints[0].description
+        assert description is not None
+        assert len(description) > 0
+        finding = lints[0].finding
+        assert finding is not None
+        finding_title = finding.title
+        assert finding_title is not None
+        assert len(finding_title) > 0
