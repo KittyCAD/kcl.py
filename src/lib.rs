@@ -4,7 +4,10 @@ use kcl_lib::{
     lint::{checks, Discovered},
     settings::types::UnitLength,
 };
-use pyo3::{pyclass, pyfunction, pymethods, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr, PyResult};
+use pyo3::{
+    prelude::PyModuleMethods, pyclass, pyfunction, pymethods, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr,
+    PyResult,
+};
 use serde::{Deserialize, Serialize};
 
 fn tokio() -> &'static tokio::runtime::Runtime {
@@ -15,7 +18,7 @@ fn tokio() -> &'static tokio::runtime::Runtime {
 
 /// The variety of image formats snapshots may be exported to.
 #[derive(Serialize, Deserialize, PartialEq, Hash, Debug, Clone, Copy)]
-#[pyclass]
+#[pyclass(eq, eq_int)]
 #[serde(rename_all = "lowercase")]
 pub enum ImageFormat {
     /// .png format
@@ -76,7 +79,7 @@ impl ExportFile {
 
 /// The valid types of output file formats.
 #[derive(Serialize, Deserialize, PartialEq, Hash, Debug, Clone)]
-#[pyclass]
+#[pyclass(eq, eq_int)]
 #[serde(rename_all = "lowercase")]
 pub enum FileExportFormat {
     /// Autodesk Filmbox (FBX) format. <https://en.wikipedia.org/wiki/FBX>
