@@ -202,6 +202,26 @@ async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
     Ok(ctx)
 }
 
+/// Execute the kcl code.
+#[pyfunction]
+async fn execute(code: String, units: UnitLength) -> PyResult<()> {
+    tokio()
+        .spawn(async move {
+            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
+            let parser = kcl_lib::parser::Parser::new(tokens);
+            let program = parser.ast().map_err(PyErr::from)?;
+            let ctx = new_context(units)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
+            // Execute the program.
+            let _ = ctx.run(&program, None).await?;
+
+            Ok(())
+        })
+        .await
+        .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?
+}
+
 /// Execute the kcl code and snapshot it in a specific format.
 #[pyfunction]
 async fn execute_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
@@ -335,6 +355,7 @@ fn kcl(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Discovered>()?;
 
     // Add our functions to the module.
+    m.add_function(wrap_pyfunction!(execute, m)?)?;
     m.add_function(wrap_pyfunction!(execute_and_snapshot, m)?)?;
     m.add_function(wrap_pyfunction!(execute_and_export, m)?)?;
     m.add_function(wrap_pyfunction!(format, m)?)?;
