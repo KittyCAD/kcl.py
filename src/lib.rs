@@ -27,11 +27,11 @@ pub enum ImageFormat {
     Jpeg,
 }
 
-impl From<ImageFormat> for kittycad::types::ImageFormat {
+impl From<ImageFormat> for kittycad_modeling_cmds::ImageFormat {
     fn from(format: ImageFormat) -> Self {
         match format {
-            ImageFormat::Png => kittycad::types::ImageFormat::Png,
-            ImageFormat::Jpeg => kittycad::types::ImageFormat::Jpeg,
+            ImageFormat::Png => kittycad_modeling_cmds::ImageFormat::Png,
+            ImageFormat::Jpeg => kittycad_modeling_cmds::ImageFormat::Jpeg,
         }
     }
 }
@@ -46,8 +46,8 @@ pub struct ExportFile {
     pub name: String,
 }
 
-impl From<kittycad::types::ExportFile> for ExportFile {
-    fn from(file: kittycad::types::ExportFile) -> Self {
+impl From<kittycad_modeling_cmds::shared::ExportFile> for ExportFile {
+    fn from(file: kittycad_modeling_cmds::shared::ExportFile) -> Self {
         ExportFile {
             contents: file.contents.0,
             name: file.name,
@@ -55,8 +55,8 @@ impl From<kittycad::types::ExportFile> for ExportFile {
     }
 }
 
-impl From<kittycad::types::RawFile> for ExportFile {
-    fn from(file: kittycad::types::RawFile) -> Self {
+impl From<kittycad_modeling_cmds::websocket::RawFile> for ExportFile {
+    fn from(file: kittycad_modeling_cmds::websocket::RawFile) -> Self {
         ExportFile {
             contents: file.contents,
             name: file.name,
@@ -114,53 +114,71 @@ pub enum FileExportFormat {
 
 fn get_output_format(
     format: &FileExportFormat,
-    src_unit: kittycad::types::UnitLength,
-) -> kittycad::types::OutputFormat {
+    src_unit: kittycad_modeling_cmds::units::UnitLength,
+) -> kittycad_modeling_cmds::format::OutputFormat {
     // Zoo co-ordinate system.
     //
     // * Forward: -Y
     // * Up: +Z
     // * Handedness: Right
-    let coords = kittycad::types::System {
-        forward: kittycad::types::AxisDirectionPair {
-            axis: kittycad::types::Axis::Y,
-            direction: kittycad::types::Direction::Negative,
+    let coords = kittycad_modeling_cmds::coord::System {
+        forward: kittycad_modeling_cmds::coord::AxisDirectionPair {
+            axis: kittycad_modeling_cmds::coord::Axis::Y,
+            direction: kittycad_modeling_cmds::coord::Direction::Negative,
         },
-        up: kittycad::types::AxisDirectionPair {
-            axis: kittycad::types::Axis::Z,
-            direction: kittycad::types::Direction::Positive,
+        up: kittycad_modeling_cmds::coord::AxisDirectionPair {
+            axis: kittycad_modeling_cmds::coord::Axis::Z,
+            direction: kittycad_modeling_cmds::coord::Direction::Positive,
         },
     };
 
     match format {
-        FileExportFormat::Fbx => kittycad::types::OutputFormat::Fbx {
-            storage: kittycad::types::FbxStorage::Binary,
-        },
-        FileExportFormat::Glb => kittycad::types::OutputFormat::Gltf {
-            storage: kittycad::types::GltfStorage::Binary,
-            presentation: kittycad::types::GltfPresentation::Compact,
-        },
-        FileExportFormat::Gltf => kittycad::types::OutputFormat::Gltf {
-            storage: kittycad::types::GltfStorage::Embedded,
-            presentation: kittycad::types::GltfPresentation::Pretty,
-        },
-        FileExportFormat::Obj => kittycad::types::OutputFormat::Obj {
-            coords,
-            units: src_unit,
-        },
-        FileExportFormat::Ply => kittycad::types::OutputFormat::Ply {
-            storage: kittycad::types::PlyStorage::Ascii,
-            coords,
-            selection: kittycad::types::Selection::DefaultScene {},
-            units: src_unit,
-        },
-        FileExportFormat::Step => kittycad::types::OutputFormat::Step { coords },
-        FileExportFormat::Stl => kittycad::types::OutputFormat::Stl {
-            storage: kittycad::types::StlStorage::Ascii,
-            coords,
-            units: src_unit,
-            selection: kittycad::types::Selection::DefaultScene {},
-        },
+        FileExportFormat::Fbx => {
+            kittycad_modeling_cmds::format::OutputFormat::Fbx(kittycad_modeling_cmds::format::fbx::export::Options {
+                storage: kittycad_modeling_cmds::format::fbx::export::Storage::Binary,
+                created: None,
+            })
+        }
+        FileExportFormat::Glb => {
+            kittycad_modeling_cmds::format::OutputFormat::Gltf(kittycad_modeling_cmds::format::gltf::export::Options {
+                storage: kittycad_modeling_cmds::format::gltf::export::Storage::Binary,
+                presentation: kittycad_modeling_cmds::format::gltf::export::Presentation::Compact,
+            })
+        }
+        FileExportFormat::Gltf => {
+            kittycad_modeling_cmds::format::OutputFormat::Gltf(kittycad_modeling_cmds::format::gltf::export::Options {
+                storage: kittycad_modeling_cmds::format::gltf::export::Storage::Embedded,
+                presentation: kittycad_modeling_cmds::format::gltf::export::Presentation::Pretty,
+            })
+        }
+        FileExportFormat::Obj => {
+            kittycad_modeling_cmds::format::OutputFormat::Obj(kittycad_modeling_cmds::format::obj::export::Options {
+                coords,
+                units: src_unit,
+            })
+        }
+        FileExportFormat::Ply => {
+            kittycad_modeling_cmds::format::OutputFormat::Ply(kittycad_modeling_cmds::format::ply::export::Options {
+                storage: kittycad_modeling_cmds::format::ply::export::Storage::Ascii,
+                coords,
+                selection: kittycad_modeling_cmds::format::Selection::DefaultScene,
+                units: src_unit,
+            })
+        }
+        FileExportFormat::Step => {
+            kittycad_modeling_cmds::format::OutputFormat::Step(kittycad_modeling_cmds::format::step::export::Options {
+                coords,
+                created: None,
+            })
+        }
+        FileExportFormat::Stl => {
+            kittycad_modeling_cmds::format::OutputFormat::Stl(kittycad_modeling_cmds::format::stl::export::Options {
+                storage: kittycad_modeling_cmds::format::stl::export::Storage::Ascii,
+                coords,
+                units: src_unit,
+                selection: kittycad_modeling_cmds::format::Selection::DefaultScene,
+            })
+        }
     }
 }
 
@@ -242,10 +260,11 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::executor::SourceRange::default(),
-                    kittycad::types::ModelingCmd::ZoomToFit {
+                    kittycad_modeling_cmds::ModelingCmd::ZoomToFit(kittycad_modeling_cmds::ZoomToFit {
                         object_ids: Default::default(),
                         padding: 0.1,
-                    },
+                        animated: false,
+                    }),
                 )
                 .await?;
 
@@ -255,14 +274,14 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::executor::SourceRange::default(),
-                    kittycad::types::ModelingCmd::TakeSnapshot {
+                    kittycad_modeling_cmds::ModelingCmd::TakeSnapshot(kittycad_modeling_cmds::TakeSnapshot {
                         format: image_format.into(),
-                    },
+                    }),
                 )
                 .await?;
 
-            let kittycad::types::OkWebSocketResponseData::Modeling {
-                modeling_response: kittycad::types::OkModelingCmdResponse::TakeSnapshot { data },
+            let kittycad_modeling_cmds::websocket::OkWebSocketResponseData::Modeling {
+                modeling_response: kittycad_modeling_cmds::ok_response::OkModelingCmdResponse::TakeSnapshot(data),
             } = resp
             else {
                 return Err(pyo3::exceptions::PyException::new_err(format!(
@@ -301,14 +320,14 @@ async fn execute_and_export(
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::executor::SourceRange::default(),
-                    kittycad::types::ModelingCmd::Export {
+                    kittycad_modeling_cmds::ModelingCmd::Export(kittycad_modeling_cmds::Export {
                         entity_ids: vec![],
                         format: get_output_format(&export_format, units.into()),
-                    },
+                    }),
                 )
                 .await?;
 
-            let kittycad::types::OkWebSocketResponseData::Export { files } = resp else {
+            let kittycad_modeling_cmds::websocket::OkWebSocketResponseData::Export { files } = resp else {
                 return Err(pyo3::exceptions::PyException::new_err(format!(
                     "Unexpected response from engine: {:?}",
                     resp
