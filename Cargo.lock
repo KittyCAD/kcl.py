@@ -1139,9 +1139,9 @@ dependencies = [
 
 [[package]]
 name = "kcl-lib"
-version = "0.2.17"
+version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f16a764cf50cfd443663d4751c8661b5b88d04e0c907b6a919287f24070459ff"
+checksum = "3c4791760fdbf19d4b549233c0df2f945d80ec5cb97da88010c670fae656e0f4"
 dependencies = [
  "anyhow",
  "approx 0.5.1",
@@ -3602,7 +3602,7 @@ dependencies = [
 
 [[package]]
 name = "zoo-kcl"
-version = "0.1.34"
+version = "0.1.36"
 dependencies = [
  "anyhow",
  "kcl-lib",
