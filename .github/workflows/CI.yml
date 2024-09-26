@@ -104,6 +104,7 @@ jobs:
             uv venv .venv
             echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
             echo "$PWD/.venv/bin" >> $GITHUB_PATH
+            uv pip install pip --upgrade
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
