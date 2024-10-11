@@ -233,7 +233,7 @@ async fn execute(code: String, units: UnitLength) -> PyResult<()> {
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None).await?;
+            let _ = ctx.run(&program, None, Default::default()).await?;
 
             Ok(())
         })
@@ -253,7 +253,7 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None).await?;
+            let _ = ctx.run(&program, None, Default::default()).await?;
 
             // Zoom to fit.
             ctx.engine
@@ -312,7 +312,7 @@ async fn execute_and_export(
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None).await?;
+            let _ = ctx.run(&program, None, Default::default()).await?;
 
             // This will not return until there are files.
             let resp = ctx
