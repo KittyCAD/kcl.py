@@ -68,7 +68,7 @@ def test_kcl_format():
 
 def test_kcl_lint():
     # Read from a file.
-    with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
+    with open(os.path.join(kcl_dir_file_path, "box_with_linter_errors.kcl"), "r") as f:
         code = str(f.read())
         assert code is not None
         assert len(code) > 0
