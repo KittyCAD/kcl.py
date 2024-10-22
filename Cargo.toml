@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 anyhow = "1.0.90"
 kcl-lib = { version = "0.2.22", features = ["pyo3", "disable-println"] }
 kittycad = "0.3.23"
-kittycad-modeling-cmds = "0.2.69"
+kittycad-modeling-cmds = "0.2.70"
 pyo3 = { version = "0.22.5", features = ["serde", "experimental-async"] }
 reqwest = "0.12"
 serde = "1.0.210"
