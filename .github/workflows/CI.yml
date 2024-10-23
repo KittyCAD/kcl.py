@@ -30,14 +30,6 @@ jobs:
             target: aarch64
     steps:
       - uses: actions/checkout@v4
-      - name: Install OpenSSL
-        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
-      - name: Set OPENSSL_DIR and PKG_CONFIG_PATH
-        run: |
-          export OPENSSL_DIR=$(openssl version -d | awk -F'"' '{print $2}')
-          export PKG_CONFIG_PATH=$OPENSSL_DIR/lib/pkgconfig
-          echo "OPENSSL_DIR=$OPENSSL_DIR" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -48,6 +40,8 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
+          before-script-linux: |
+            yum install -y openssl-devel
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
