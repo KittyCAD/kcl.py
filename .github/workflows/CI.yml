@@ -19,6 +19,28 @@ permissions:
   contents: read
 
 jobs:
+  linux-x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist --find-interpreter
+          sccache: 'true'
+          manylinux: auto
+          before-script-linux: |
+            yum install openssl-devel -y
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-x86_64
+          path: dist
+
   windows:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
@@ -120,7 +142,7 @@ jobs:
     permissions:
       contents: write
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [windows, macos, sdist]
+    needs: [linux-x86_64, windows, macos, sdist]
     steps:
       - uses: actions/download-artifact@v4
       - name: Install the latest version of uv
