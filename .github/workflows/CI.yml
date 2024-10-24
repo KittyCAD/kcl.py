@@ -34,7 +34,7 @@ jobs:
           sccache: 'true'
           manylinux: auto
           before-script-linux: |
-            yum install openssl-devel devtoolset-10-libatomic-devel perl-IPC-Cmd -y
+            yum install openssl-devel -y
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
