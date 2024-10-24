@@ -28,6 +28,8 @@ jobs:
             target: x86_64
     steps:
       - uses: actions/checkout@v4
+      - name: Install OpenSSL
+        run: sudo apt-get update && sudo apt-get install -y pkg-config openssl-dev
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -38,8 +40,6 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
-          before-script-linux: |
-            apt-get update && apt-get install -y libssl-dev pkg-config
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
