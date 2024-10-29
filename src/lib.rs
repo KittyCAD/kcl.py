@@ -183,50 +183,13 @@ fn get_output_format(
 }
 
 async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
-    let user_agent = concat!(env!("CARGO_PKG_NAME"), ".rs/", env!("CARGO_PKG_VERSION"),);
-    let http_client = reqwest::Client::builder()
-        .user_agent(user_agent)
-        // For file conversions we need this to be long.
-        .timeout(std::time::Duration::from_secs(600))
-        .connect_timeout(std::time::Duration::from_secs(60));
-    let ws_client = reqwest::Client::builder()
-        .user_agent(user_agent)
-        // For file conversions we need this to be long.
-        .timeout(std::time::Duration::from_secs(600))
-        .connect_timeout(std::time::Duration::from_secs(60))
-        .connection_verbose(true)
-        .tcp_keepalive(std::time::Duration::from_secs(600))
-        .http1_only();
-
-    let token = if let Ok(token) = std::env::var("KITTYCAD_API_TOKEN") {
-        token
-    } else if let Ok(token) = std::env::var("ZOO_API_TOKEN") {
-        token
-    } else {
-        return Err(anyhow::anyhow!(
-            "No API token found in environment variables. Use KITTYCAD_API_TOKEN or ZOO_API_TOKEN"
-        ));
-    };
-
-    // Create the client.
-    let mut client = kittycad::Client::new_from_reqwest(token, http_client, ws_client);
-    // Set a local engine address if it's set.
-    if let Ok(addr) = std::env::var("ZOO_HOST") {
-        client.set_base_url(addr);
-    } else if let Ok(addr) = std::env::var("KITTYCAD_HOST") {
-        client.set_base_url(addr);
-    }
-
-    let ctx = ExecutorContext::new(
-        &client,
-        ExecutorSettings {
-            units,
-            highlight_edges: true,
-            enable_ssao: false,
-            show_grid: false,
-            replay: None,
-        },
-    )
+    let ctx = ExecutorContext::new_with_default_client(ExecutorSettings {
+        units,
+        highlight_edges: true,
+        enable_ssao: false,
+        show_grid: false,
+        replay: None,
+    })
     .await?;
     Ok(ctx)
 }
