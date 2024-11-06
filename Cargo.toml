@@ -10,7 +10,7 @@ name = "kcl"
 crate-type = ["cdylib"]
 
 [dependencies]
-anyhow = "1.0.92"
+anyhow = "1.0.93"
 kcl-lib = { version = "0.2.23", features = ["pyo3", "disable-println"] }
 kittycad = "0.3.25"
 kittycad-modeling-cmds = "0.2.71"
