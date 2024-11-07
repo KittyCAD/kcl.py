@@ -18,5 +18,5 @@ pyo3 = { version = "0.22.6", features = ["serde", "experimental-async"] }
 reqwest = "0.12"
 serde = "1.0.214"
 serde_json = "1.0.132"
-tokio = "1.41.0"
+tokio = "1.41.1"
 uuid = { version = "1.11.0", features = ["v4"] }
