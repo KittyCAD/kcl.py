@@ -199,9 +199,7 @@ async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
 async fn execute(code: String, units: UnitLength) -> PyResult<()> {
     tokio()
         .spawn(async move {
-            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-            let parser = kcl_lib::parser::Parser::new(tokens);
-            let program = parser.ast().map_err(PyErr::from)?;
+            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
@@ -219,9 +217,7 @@ async fn execute(code: String, units: UnitLength) -> PyResult<()> {
 async fn execute_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
-            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-            let parser = kcl_lib::parser::Parser::new(tokens);
-            let program = parser.ast().map_err(PyErr::from)?;
+            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
@@ -278,9 +274,7 @@ async fn execute_and_export(
 ) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
-            let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-            let parser = kcl_lib::parser::Parser::new(tokens);
-            let program = parser.ast().map_err(PyErr::from)?;
+            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
@@ -316,9 +310,7 @@ async fn execute_and_export(
 /// Format the kcl code.
 #[pyfunction]
 fn format(code: String) -> PyResult<String> {
-    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-    let parser = kcl_lib::parser::Parser::new(tokens);
-    let program = parser.ast().map_err(PyErr::from)?;
+    let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
     let recasted = program.recast(&Default::default(), 0);
 
     Ok(recasted)
@@ -327,9 +319,7 @@ fn format(code: String) -> PyResult<String> {
 /// Lint the kcl code.
 #[pyfunction]
 fn lint(code: String) -> PyResult<Vec<Discovered>> {
-    let tokens = kcl_lib::token::lexer(&code).map_err(PyErr::from)?;
-    let parser = kcl_lib::parser::Parser::new(tokens);
-    let program = parser.ast().map_err(PyErr::from)?;
+    let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
     let lints = program
         .lint(checks::lint_variables)
         .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
