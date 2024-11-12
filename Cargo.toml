@@ -16,7 +16,7 @@ kittycad = "0.3.25"
 kittycad-modeling-cmds = "0.2.71"
 pyo3 = { version = "0.22.6", features = ["serde", "experimental-async"] }
 reqwest = "0.12"
-serde = "1.0.214"
+serde = "1.0.215"
 serde_json = "1.0.132"
 tokio = "1.41.1"
 uuid = { version = "1.11.0", features = ["v4"] }
