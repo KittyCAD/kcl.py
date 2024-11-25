@@ -118,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
       - name: Install codespell
         run: |
             uv venv .venv
@@ -146,7 +146,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
       - name: Install codespell
         run: |
             uv venv .venv
