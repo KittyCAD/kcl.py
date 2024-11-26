@@ -1,8 +1,7 @@
 use anyhow::Result;
 use kcl_lib::{
-    executor::{ExecutorContext, ExecutorSettings},
     lint::{checks, Discovered},
-    settings::types::UnitLength,
+    ExecutorContext, UnitLength,
 };
 use pyo3::{
     prelude::PyModuleMethods, pyclass, pyfunction, pymethods, pymodule, types::PyModule, wrap_pyfunction, Bound, PyErr,
@@ -183,14 +182,7 @@ fn get_output_format(
 }
 
 async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
-    let ctx = ExecutorContext::new_with_default_client(ExecutorSettings {
-        units,
-        highlight_edges: true,
-        enable_ssao: false,
-        show_grid: false,
-        replay: None,
-    })
-    .await?;
+    let ctx = ExecutorContext::new_with_default_client(units).await?;
     Ok(ctx)
 }
 
@@ -199,12 +191,12 @@ async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
 async fn execute(code: String, units: UnitLength) -> PyResult<()> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None, Default::default(), None).await?;
+            ctx.run(&program, &mut Default::default()).await?;
 
             Ok(())
         })
@@ -217,18 +209,18 @@ async fn execute(code: String, units: UnitLength) -> PyResult<()> {
 async fn execute_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None, Default::default(), None).await?;
+            ctx.run(&program, &mut Default::default()).await?;
 
             // Zoom to fit.
             ctx.engine
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
-                    kcl_lib::executor::SourceRange::default(),
+                    kcl_lib::SourceRange::default(),
                     kittycad_modeling_cmds::ModelingCmd::ZoomToFit(kittycad_modeling_cmds::ZoomToFit {
                         object_ids: Default::default(),
                         padding: 0.1,
@@ -242,7 +234,7 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
                 .engine
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
-                    kcl_lib::executor::SourceRange::default(),
+                    kcl_lib::SourceRange::default(),
                     kittycad_modeling_cmds::ModelingCmd::TakeSnapshot(kittycad_modeling_cmds::TakeSnapshot {
                         format: image_format.into(),
                     }),
@@ -274,19 +266,19 @@ async fn execute_and_export(
 ) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse(&code).map_err(PyErr::from)?;
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            let _ = ctx.run(&program, None, Default::default(), None).await?;
+            ctx.run(&program, &mut Default::default()).await?;
 
             // This will not return until there are files.
             let resp = ctx
                 .engine
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
-                    kcl_lib::executor::SourceRange::default(),
+                    kcl_lib::SourceRange::default(),
                     kittycad_modeling_cmds::ModelingCmd::Export(kittycad_modeling_cmds::Export {
                         entity_ids: vec![],
                         format: get_output_format(&export_format, units.into()),
@@ -310,8 +302,8 @@ async fn execute_and_export(
 /// Format the kcl code.
 #[pyfunction]
 fn format(code: String) -> PyResult<String> {
-    let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
-    let recasted = program.recast(&Default::default(), 0);
+    let program = kcl_lib::Program::parse(&code).map_err(PyErr::from)?;
+    let recasted = program.recast();
 
     Ok(recasted)
 }
@@ -319,7 +311,7 @@ fn format(code: String) -> PyResult<String> {
 /// Lint the kcl code.
 #[pyfunction]
 fn lint(code: String) -> PyResult<Vec<Discovered>> {
-    let program = kcl_lib::parser::top_level_parse(&code).map_err(PyErr::from)?;
+    let program = kcl_lib::Program::parse(&code).map_err(PyErr::from)?;
     let lints = program
         .lint(checks::lint_variables)
         .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
