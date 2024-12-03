@@ -4044,7 +4044,7 @@ dependencies = [
 
 [[package]]
 name = "zoo-kcl"
-version = "0.1.46"
+version = "0.1.47"
 dependencies = [
  "anyhow",
  "kcl-lib",
