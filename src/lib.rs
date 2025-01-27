@@ -192,11 +192,16 @@ async fn execute(code: String, units: UnitLength) -> PyResult<()> {
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+
+            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
+                units,
+                ..Default::default()
+            });
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut Default::default()).await?;
+            ctx.run(program.into(), &mut state).await?;
 
             Ok(())
         })
@@ -210,18 +215,22 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
+                units,
+                ..Default::default()
+            });
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut Default::default()).await?;
+            ctx.run(program.into(), &mut state).await?;
 
             // Zoom to fit.
             ctx.engine
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::SourceRange::default(),
-                    kittycad_modeling_cmds::ModelingCmd::ZoomToFit(kittycad_modeling_cmds::ZoomToFit {
+                    &kittycad_modeling_cmds::ModelingCmd::ZoomToFit(kittycad_modeling_cmds::ZoomToFit {
                         object_ids: Default::default(),
                         padding: 0.1,
                         animated: false,
@@ -235,7 +244,7 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::SourceRange::default(),
-                    kittycad_modeling_cmds::ModelingCmd::TakeSnapshot(kittycad_modeling_cmds::TakeSnapshot {
+                    &kittycad_modeling_cmds::ModelingCmd::TakeSnapshot(kittycad_modeling_cmds::TakeSnapshot {
                         format: image_format.into(),
                     }),
                 )
@@ -267,11 +276,15 @@ async fn execute_and_export(
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
+                units,
+                ..Default::default()
+            });
             let ctx = new_context(units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut Default::default()).await?;
+            ctx.run(program.into(), &mut state).await?;
 
             // This will not return until there are files.
             let resp = ctx
@@ -279,7 +292,7 @@ async fn execute_and_export(
                 .send_modeling_cmd(
                     uuid::Uuid::new_v4(),
                     kcl_lib::SourceRange::default(),
-                    kittycad_modeling_cmds::ModelingCmd::Export(kittycad_modeling_cmds::Export {
+                    &kittycad_modeling_cmds::ModelingCmd::Export(kittycad_modeling_cmds::Export {
                         entity_ids: vec![],
                         format: get_output_format(&export_format, units.into()),
                     }),
