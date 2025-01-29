@@ -16,6 +16,15 @@ async def test_kcl_execute():
     await kcl.execute(os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.UnitLength.Mm)
 
 @pytest.mark.asyncio
+async def test_kcl_execute_code():
+    # Read from a file.
+    with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
+        code = str(f.read())
+        assert code is not None
+        assert len(code) > 0
+        await kcl.execute_code(code, kcl.UnitLength.Mm)
+
+@pytest.mark.asyncio
 async def test_kcl_execute_dir_assembly():
     # Read from a file.
     await kcl.execute(os.path.join(kcl_dir_file_path, "walkie-talkie"), kcl.UnitLength.Mm)
