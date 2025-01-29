@@ -183,20 +183,19 @@ fn get_output_format(
 
 /// Get the path to the current file from the path given, and read the code.
 async fn get_code_and_file_path(path: &str) -> Result<(String, std::path::PathBuf)> {
-    let path = std::path::PathBuf::from(path);
+    let mut path = std::path::PathBuf::from(path);
     // Check if the path is a directory, if so we want to look for a main.kcl inside.
     if path.is_dir() {
-        let main_kcl = path.join("main.kcl");
-        if main_kcl.exists() {
-            let code = tokio::fs::read_to_string(&main_kcl).await?;
-            return Ok((code, main_kcl));
+        path = path.join("main.kcl");
+        if !path.exists() {
+            return Err(anyhow::anyhow!("Directory must contain a main.kcl file"));
         }
-    }
-
-    // Otherwise be sure we have a kcl file.
-    if let Some(ext) = path.extension() {
-        if ext != "kcl" {
-            return Err(anyhow::anyhow!("File must have a .kcl extension"));
+    } else {
+        // Otherwise be sure we have a kcl file.
+        if let Some(ext) = path.extension() {
+            if ext != "kcl" {
+                return Err(anyhow::anyhow!("File must have a .kcl extension"));
+            }
         }
     }
 
