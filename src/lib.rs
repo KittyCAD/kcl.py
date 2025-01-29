@@ -181,23 +181,53 @@ fn get_output_format(
     }
 }
 
-async fn new_context(units: UnitLength) -> Result<ExecutorContext> {
-    let ctx = ExecutorContext::new_with_default_client(units).await?;
-    Ok(ctx)
+/// Get the path to the current file from the path given, and read the code.
+async fn get_code_and_file_path(path: &str) -> Result<(String, std::path::PathBuf)> {
+    let mut path = std::path::PathBuf::from(path);
+    // Check if the path is a directory, if so we want to look for a main.kcl inside.
+    if path.is_dir() {
+        path = path.join("main.kcl");
+        if !path.exists() {
+            return Err(anyhow::anyhow!("Directory must contain a main.kcl file"));
+        }
+    } else {
+        // Otherwise be sure we have a kcl file.
+        if let Some(ext) = path.extension() {
+            if ext != "kcl" {
+                return Err(anyhow::anyhow!("File must have a .kcl extension"));
+            }
+        }
+    }
+
+    let code = tokio::fs::read_to_string(&path).await?;
+    Ok((code, path))
+}
+
+async fn new_context_state(
+    current_file: std::path::PathBuf,
+    units: UnitLength,
+) -> Result<(ExecutorContext, kcl_lib::ExecState)> {
+    let mut settings = kcl_lib::ExecutorSettings {
+        units,
+        ..Default::default()
+    };
+    settings.with_current_file(current_file);
+    let state = kcl_lib::ExecState::new(&settings);
+    let ctx = ExecutorContext::new_with_client(settings, None, None).await?;
+    Ok((ctx, state))
 }
 
 /// Execute the kcl code.
 #[pyfunction]
-async fn execute(code: String, units: UnitLength) -> PyResult<()> {
+async fn execute(path: String, units: UnitLength) -> PyResult<()> {
     tokio()
         .spawn(async move {
+            let (code, path) = get_code_and_file_path(&path)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
-                units,
-                ..Default::default()
-            });
-            let ctx = new_context(units)
+            let (ctx, mut state) = new_context_state(path, units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -211,15 +241,15 @@ async fn execute(code: String, units: UnitLength) -> PyResult<()> {
 
 /// Execute the kcl code and snapshot it in a specific format.
 #[pyfunction]
-async fn execute_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
+async fn execute_and_snapshot(path: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
+            let (code, path) = get_code_and_file_path(&path)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
-            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
-                units,
-                ..Default::default()
-            });
-            let ctx = new_context(units)
+
+            let (ctx, mut state) = new_context_state(path, units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -269,18 +299,18 @@ async fn execute_and_snapshot(code: String, units: UnitLength, image_format: Ima
 /// Execute the kcl code and export it to a specific file format.
 #[pyfunction]
 async fn execute_and_export(
-    code: String,
+    path: String,
     units: UnitLength,
     export_format: FileExportFormat,
 ) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
+            let (code, path) = get_code_and_file_path(&path)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
-            let mut state = kcl_lib::ExecState::new(&kcl_lib::ExecutorSettings {
-                units,
-                ..Default::default()
-            });
-            let ctx = new_context(units)
+
+            let (ctx, mut state) = new_context_state(path, units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
