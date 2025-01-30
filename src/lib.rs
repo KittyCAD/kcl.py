@@ -319,15 +319,12 @@ async fn execute_and_snapshot(path: String, units: UnitLength, image_format: Ima
 
 /// Execute the kcl code and snapshot it in a specific format.
 #[pyfunction]
-async fn execute_code_and_snapshot(path: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
+async fn execute_code_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
-            let (code, path) = get_code_and_file_path(&path)
-                .await
-                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(Some(path), units)
+            let (ctx, mut state) = new_context_state(None, units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -377,15 +374,18 @@ async fn execute_code_and_snapshot(path: String, units: UnitLength, image_format
 /// Execute a kcl file and export it to a specific file format.
 #[pyfunction]
 async fn execute_and_export(
-    code: String,
+    path: String,
     units: UnitLength,
     export_format: FileExportFormat,
 ) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
+            let (code, path) = get_code_and_file_path(&path)
+                .await
+                .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(None, units)
+            let (ctx, mut state) = new_context_state(Some(path), units)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
