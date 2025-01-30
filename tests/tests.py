@@ -25,6 +25,41 @@ async def test_kcl_execute_code():
         await kcl.execute_code(code, kcl.UnitLength.Mm)
 
 @pytest.mark.asyncio
+async def test_kcl_execute_code_and_snapshot():
+    # Read from a file.
+    with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
+        code = str(f.read())
+        assert code is not None
+        assert len(code) > 0
+        image_bytes = await kcl.execute_code_and_snapshot(
+            code, kcl.UnitLength.Mm, kcl.ImageFormat.Jpeg
+        )
+        assert image_bytes is not None
+        assert len(image_bytes) > 0
+
+
+@pytest.mark.asyncio
+async def test_kcl_execute_code_and_export():
+    # Read from a file.
+    with open(os.path.join(kcl_dir_file_path, "lego.kcl"), "r") as f:
+        code = str(f.read())
+        assert code is not None
+        assert len(code) > 0
+        files = await kcl.execute_code_and_export(
+            code, kcl.UnitLength.Mm, kcl.FileExportFormat.Step
+        )
+        assert files is not None
+        assert len(files) > 0
+        assert files[0] is not None
+        name = files[0].name
+        contents = files[0].contents
+        assert name is not None
+        assert len(name) > 0
+        assert contents is not None
+        assert len(contents) > 0
+
+
+@pytest.mark.asyncio
 async def test_kcl_execute_dir_assembly():
     # Read from a file.
     await kcl.execute(os.path.join(kcl_dir_file_path, "walkie-talkie"), kcl.UnitLength.Mm)
