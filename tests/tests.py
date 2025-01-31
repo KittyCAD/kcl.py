@@ -13,7 +13,7 @@ kcl_dir_file_path = os.path.join(
 @pytest.mark.asyncio
 async def test_kcl_execute():
     # Read from a file.
-    await kcl.execute(os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.UnitLength.Mm)
+    await kcl.execute(os.path.join(kcl_dir_file_path, "lego.kcl"))
 
 @pytest.mark.asyncio
 async def test_kcl_execute_code():
@@ -22,7 +22,7 @@ async def test_kcl_execute_code():
         code = str(f.read())
         assert code is not None
         assert len(code) > 0
-        await kcl.execute_code(code, kcl.UnitLength.Mm)
+        await kcl.execute_code(code)
 
 @pytest.mark.asyncio
 async def test_kcl_execute_code_and_snapshot():
@@ -32,7 +32,7 @@ async def test_kcl_execute_code_and_snapshot():
         assert code is not None
         assert len(code) > 0
         image_bytes = await kcl.execute_code_and_snapshot(
-            code, kcl.UnitLength.Mm, kcl.ImageFormat.Jpeg
+            code, kcl.ImageFormat.Jpeg
         )
         assert image_bytes is not None
         assert len(image_bytes) > 0
@@ -46,7 +46,7 @@ async def test_kcl_execute_code_and_export():
         assert code is not None
         assert len(code) > 0
         files = await kcl.execute_code_and_export(
-            code, kcl.UnitLength.Mm, kcl.FileExportFormat.Step
+            code, kcl.FileExportFormat.Step
         )
         assert files is not None
         assert len(files) > 0
@@ -62,13 +62,13 @@ async def test_kcl_execute_code_and_export():
 @pytest.mark.asyncio
 async def test_kcl_execute_dir_assembly():
     # Read from a file.
-    await kcl.execute(os.path.join(kcl_dir_file_path, "walkie-talkie"), kcl.UnitLength.Mm)
+    await kcl.execute(os.path.join(kcl_dir_file_path, "walkie-talkie"))
 
 @pytest.mark.asyncio
 async def test_kcl_execute_and_snapshot():
     # Read from a file.
     image_bytes = await kcl.execute_and_snapshot(
-        os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.UnitLength.Mm, kcl.ImageFormat.Jpeg
+        os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.ImageFormat.Jpeg
     )
     assert image_bytes is not None
     assert len(image_bytes) > 0
@@ -77,7 +77,7 @@ async def test_kcl_execute_and_snapshot():
 async def test_kcl_execute_and_snapshot_dir():
     # Read from a file.
     image_bytes = await kcl.execute_and_snapshot(
-        os.path.join(kcl_dir_file_path, "walkie-talkie"), kcl.UnitLength.Mm, kcl.ImageFormat.Jpeg
+        os.path.join(kcl_dir_file_path, "walkie-talkie"), kcl.ImageFormat.Jpeg
     )
     assert image_bytes is not None
     assert len(image_bytes) > 0
@@ -87,7 +87,7 @@ async def test_kcl_execute_and_snapshot_dir():
 async def test_kcl_execute_and_export():
     # Read from a file.
     files = await kcl.execute_and_export(
-        os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.UnitLength.Mm, kcl.FileExportFormat.Step
+        os.path.join(kcl_dir_file_path, "lego.kcl"), kcl.FileExportFormat.Step
     )
     assert files is not None
     assert len(files) > 0
