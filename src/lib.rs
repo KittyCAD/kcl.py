@@ -203,14 +203,8 @@ async fn get_code_and_file_path(path: &str) -> Result<(String, std::path::PathBu
     Ok((code, path))
 }
 
-async fn new_context_state(
-    current_file: Option<std::path::PathBuf>,
-    units: UnitLength,
-) -> Result<(ExecutorContext, kcl_lib::ExecState)> {
-    let mut settings = kcl_lib::ExecutorSettings {
-        units,
-        ..Default::default()
-    };
+async fn new_context_state(current_file: Option<std::path::PathBuf>) -> Result<(ExecutorContext, kcl_lib::ExecState)> {
+    let mut settings: kcl_lib::ExecutorSettings = Default::default();
     if let Some(current_file) = current_file {
         settings.with_current_file(current_file);
     }
@@ -221,7 +215,7 @@ async fn new_context_state(
 
 /// Execute the kcl code from a file path.
 #[pyfunction]
-async fn execute(path: String, units: UnitLength) -> PyResult<()> {
+async fn execute(path: String) -> PyResult<()> {
     tokio()
         .spawn(async move {
             let (code, path) = get_code_and_file_path(&path)
@@ -229,7 +223,7 @@ async fn execute(path: String, units: UnitLength) -> PyResult<()> {
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(Some(path), units)
+            let (ctx, mut state) = new_context_state(Some(path))
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -243,12 +237,12 @@ async fn execute(path: String, units: UnitLength) -> PyResult<()> {
 
 /// Execute the kcl code.
 #[pyfunction]
-async fn execute_code(code: String, units: UnitLength) -> PyResult<()> {
+async fn execute_code(code: String) -> PyResult<()> {
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(None, units)
+            let (ctx, mut state) = new_context_state(None)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -262,7 +256,7 @@ async fn execute_code(code: String, units: UnitLength) -> PyResult<()> {
 
 /// Execute a kcl file and snapshot it in a specific format.
 #[pyfunction]
-async fn execute_and_snapshot(path: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
+async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
             let (code, path) = get_code_and_file_path(&path)
@@ -270,7 +264,7 @@ async fn execute_and_snapshot(path: String, units: UnitLength, image_format: Ima
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(Some(path), units)
+            let (ctx, mut state) = new_context_state(Some(path))
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -319,12 +313,12 @@ async fn execute_and_snapshot(path: String, units: UnitLength, image_format: Ima
 
 /// Execute the kcl code and snapshot it in a specific format.
 #[pyfunction]
-async fn execute_code_and_snapshot(code: String, units: UnitLength, image_format: ImageFormat) -> PyResult<Vec<u8>> {
+async fn execute_code_and_snapshot(code: String, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
 
-            let (ctx, mut state) = new_context_state(None, units)
+            let (ctx, mut state) = new_context_state(None)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -373,19 +367,17 @@ async fn execute_code_and_snapshot(code: String, units: UnitLength, image_format
 
 /// Execute a kcl file and export it to a specific file format.
 #[pyfunction]
-async fn execute_and_export(
-    path: String,
-    units: UnitLength,
-    export_format: FileExportFormat,
-) -> PyResult<Vec<ExportFile>> {
+async fn execute_and_export(path: String, export_format: FileExportFormat) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
             let (code, path) = get_code_and_file_path(&path)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let settings = program.get_meta_settings()?.unwrap_or_default();
+            let units: UnitLength = settings.default_length_units.into();
 
-            let (ctx, mut state) = new_context_state(Some(path), units)
+            let (ctx, mut state) = new_context_state(Some(path))
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
@@ -419,16 +411,14 @@ async fn execute_and_export(
 
 /// Execute the kcl code and export it to a specific file format.
 #[pyfunction]
-async fn execute_code_and_export(
-    code: String,
-    units: UnitLength,
-    export_format: FileExportFormat,
-) -> PyResult<Vec<ExportFile>> {
+async fn execute_code_and_export(code: String, export_format: FileExportFormat) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let settings = program.get_meta_settings()?.unwrap_or_default();
+            let units: UnitLength = settings.default_length_units.into();
 
-            let (ctx, mut state) = new_context_state(None, units)
+            let (ctx, mut state) = new_context_state(None)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
