@@ -227,7 +227,7 @@ async fn execute(path: String) -> PyResult<()> {
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             Ok(())
         })
@@ -246,7 +246,7 @@ async fn execute_code(code: String) -> PyResult<()> {
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             Ok(())
         })
@@ -268,7 +268,7 @@ async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResu
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             // Zoom to fit.
             ctx.engine
@@ -322,7 +322,7 @@ async fn execute_code_and_snapshot(code: String, image_format: ImageFormat) -> P
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             // Zoom to fit.
             ctx.engine
@@ -381,7 +381,7 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             // This will not return until there are files.
             let resp = ctx
@@ -422,7 +422,7 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(program.into(), &mut state).await?;
+            ctx.run(&program, &mut state).await?;
 
             // This will not return until there are files.
             let resp = ctx
