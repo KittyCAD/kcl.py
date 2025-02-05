@@ -1,11 +1,12 @@
 // Walkie Talkie
 // A portable, handheld two-way radio device that allows users to communicate wirelessly over short to medium distances. It operates on specific radio frequencies and features a push-to-talk button for transmitting messages, making it ideal for quick and reliable communication in outdoor, work, or emergency settings.
 
+
 // Import parts and constants
-import body from 'body.kcl' 
-import  antenna from 'antenna.kcl'
+import body from "body.kcl"
+import antenna from "antenna.kcl"
 import case from "case.kcl"
-import talkButton from "talk-button.kcl"  
+import talkButton from "talk-button.kcl"
 import knob from "knob.kcl"
 import width, height, thickness, screenWidth, screenHeight, screenYPosition, tolerance from "globals.kcl"
 import button from "button.kcl"
@@ -16,10 +17,10 @@ body
 // Import the case
 case
   |> appearance({
-     color = '#D0FF01',
-     metalness = 0,
-     roughness = 50
-   }, %)
+       color = '#D0FF01',
+       metalness = 0,
+       roughness = 50
+     }, %)
 
 // Import the antenna
 antenna
@@ -45,17 +46,15 @@ button([
 // Import the talk button
 talkButton
   |> appearance({
-     color = '#D0FF01',
-     metalness = 90,
-     roughness = 90
-   }, %)
+       color = '#D0FF01',
+       metalness = 90,
+       roughness = 90
+     }, %)
 
 // Import the frequency knob
 knob
   |> appearance({
-     color = '#D0FF01',
-     metalness = 90,
-     roughness = 50
-   }, %)
-
-
+       color = '#D0FF01',
+       metalness = 90,
+       roughness = 50
+     }, %)

@@ -11,4 +11,4 @@ const box_sketch = startSketchOn('XY')
   |> xLineTo(profileStartX(%), %, $line3)
   |> close(%, $line4)
 
-const box3D = extrude(box_height, box_sketch)
+const box3D = extrude(box_sketch, length = box_height)
