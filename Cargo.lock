@@ -1283,9 +1283,9 @@ dependencies = [
 
 [[package]]
 name = "kcl-lib"
-version = "0.2.34"
+version = "0.2.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc5cb09145ef17a5dfdc8f7da0565ffd8013369babec495ec4b2fecf6271fd13"
+checksum = "5e7bfd93d4d402b7af575499468ec1343116910bc53f8e3067f319d3e7e2bcb8"
 dependencies = [
  "anyhow",
  "approx 0.5.1",
@@ -1305,6 +1305,7 @@ dependencies = [
  "http",
  "image",
  "indexmap 2.7.1",
+ "itertools",
  "js-sys",
  "kittycad",
  "kittycad-modeling-cmds",
@@ -1549,9 +1550,9 @@ dependencies = [
 
 [[package]]
 name = "miette"
-version = "7.4.0"
+version = "7.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "317f146e2eb7021892722af37cf1b971f0a70c8406f487e24952667616192c64"
+checksum = "1a955165f87b37fd1862df2a59547ac542c77ef6d17c666f619d1ad22dd89484"
 dependencies = [
  "cfg-if",
  "miette-derive",
@@ -1561,9 +1562,9 @@ dependencies = [
 
 [[package]]
 name = "miette-derive"
-version = "7.4.0"
+version = "7.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23c9b935fbe1d6cbd1dac857b54a688145e2d93f48db36010514d0f612d0ad67"
+checksum = "bf45bf44ab49be92fd1227a3be6fc6f617f1a337c06af54981048574d8783147"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3998,7 +3999,7 @@ dependencies = [
 
 [[package]]
 name = "zoo-kcl"
-version = "0.2.5"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "kcl-lib",
