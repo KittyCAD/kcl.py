@@ -20,11 +20,11 @@ bodyExtrude = extrude(bodySketch, length = thickness)
          getNextAdjacentEdge(chamfer4)
        ]
      }, %)
-  // |> appearance({
+  // |> appearance(
   //      color = '#707980',
   //      metalness = 90,
   //      roughness = 90
-  //    }, %)
+  //    )
 
   
 
@@ -58,11 +58,11 @@ sketch002 = startSketchOn(bodyExtrude, 'END')
      }, %)
   |> close()
 extrude002 = extrude(sketch002, length = -0.0625)
-  // |> appearance({
+  // |> appearance(
   //      color = '#707980',
   //      metalness = 90,
   //      roughness = 90
-  //    }, %)
+  //    )
 
 
 // Create the pocket for the screen
@@ -74,11 +74,11 @@ sketch003 = startSketchOn(extrude002, 'start')
   |> line(endAbsolute = [profileStartX(%), profileStartY(%)])
   |> close()
 extrude003 = extrude(sketch003, length = screenDepth)
-  // |> appearance({
+  // |> appearance(
   //      color = '#707980',
   //      metalness = 90,
   //      roughness = 90
-  //    }, %)
+  //    )
 
 
 // Create the speaker box

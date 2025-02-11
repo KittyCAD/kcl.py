@@ -374,7 +374,7 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
-            let settings = program.get_meta_settings()?.unwrap_or_default();
+            let settings = program.meta_settings()?.unwrap_or_default();
             let units: UnitLength = settings.default_length_units.into();
 
             let (ctx, mut state) = new_context_state(Some(path))
@@ -415,7 +415,7 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
     tokio()
         .spawn(async move {
             let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
-            let settings = program.get_meta_settings()?.unwrap_or_default();
+            let settings = program.meta_settings()?.unwrap_or_default();
             let units: UnitLength = settings.default_length_units.into();
 
             let (ctx, mut state) = new_context_state(None)
