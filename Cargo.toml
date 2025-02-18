@@ -11,14 +11,14 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0.95"
-kcl-lib = { version = "0.2.35", features = [
+kcl-lib = { version = "0.2.37", features = [
     "pyo3",
     "engine",
     "disable-println",
 ] }
 #kcl-lib = { path = "../modeling-app/src/wasm-lib/kcl", default-features = false, features = ["pyo3", "engine", "disable-println"] }
 kittycad = "0.3.28"
-kittycad-modeling-cmds = "0.2.96"
+kittycad-modeling-cmds = "0.2.97"
 pyo3 = { version = "0.22.6", features = ["serde", "experimental-async"] }
 reqwest = "0.12"
 serde = "1.0.217"
