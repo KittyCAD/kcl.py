@@ -34,7 +34,7 @@ fn squareHolePattern(plane, x, y) {
     |> patternTransform2d(instances = 11, transform = transformY)
   return squareHolePatternSketch
 }
-sketch005 = startSketchOn(offsetPlane("XZ", 1))
+sketch005 = startSketchOn(offsetPlane("XZ", offset = 1))
   |> startProfileAt([
        -width / 2 + offset + caseTolerance,
        height / 2 - (chamferLength + (offset + caseTolerance) / 2 * cos(toRadians(45)))
