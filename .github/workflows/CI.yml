@@ -42,7 +42,7 @@ jobs:
           path: dist
 
   windows:
-    runs-on: windows-latest
+    runs-on: windows-16-cores
     strategy:
       matrix:
         target:
