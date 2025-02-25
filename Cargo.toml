@@ -10,7 +10,7 @@ name = "kcl"
 crate-type = ["cdylib"]
 
 [dependencies]
-anyhow = "1.0.95"
+anyhow = "1.0.96"
 kcl-lib = { version = "0.2.38", features = [
     "pyo3",
     "engine",
