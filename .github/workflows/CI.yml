@@ -96,14 +96,9 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: taiki-e/install-action@just
       - name: Run tests
-        run: |
-          uv python install
-          uv venv .venv
-          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-          uv pip install .[test]
-          uv run pytest tests/tests.py
+        run: just setup-uv && just test
         env:
           KITTYCAD_API_TOKEN: ${{ secrets.KITTYCAD_API_TOKEN }}
 
