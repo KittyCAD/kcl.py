@@ -99,6 +99,8 @@ jobs:
       - name: Run tests
         run: |
           uv python install
+          uv venv .venv
+          .venv/bin/activate
           uv pip install .[test]
           uv run pytest tests/tests.py
         env:
