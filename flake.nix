@@ -14,6 +14,7 @@
         devShell = pkgs.mkShell {
           buildInputs = [
             pkgs.cargo
+            pkgs.just
             pkgs.openssl
             pkgs.pkg-config
             pkgs.python313
