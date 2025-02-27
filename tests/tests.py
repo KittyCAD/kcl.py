@@ -17,7 +17,7 @@ async def test_kcl_execute_with_exception():
     except Exception as e:
         assert e is not None
         assert len(str(e)) > 0
-        assert "boogers" in str(e)
+        assert "lksjndflsskjfnak;jfna##" in str(e)
 
 
 @pytest.mark.asyncio
