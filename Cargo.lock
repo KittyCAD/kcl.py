@@ -66,9 +66,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.95"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+checksum = "6b964d184e89d9b6b67dd2715bc8e74cf3107fb2b529990c90cf517326150bf4"
 dependencies = [
  "backtrace",
 ]
@@ -502,9 +502,9 @@ dependencies = [
 
 [[package]]
 name = "derive-docs"
-version = "0.1.35"
+version = "0.1.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d5de73e3e2d31815f6551506edabbb75368c20f70806c1a7b9b1244b06e138e"
+checksum = "e2704f07e9b69f171583999de8ff6039f8bd714034d1e0d65894ded384e58dab"
 dependencies = [
  "Inflector",
  "convert_case",
@@ -1283,9 +1283,9 @@ dependencies = [
 
 [[package]]
 name = "kcl-lib"
-version = "0.2.38"
+version = "0.2.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c0972511a0732091b0f7c0b4647f78b29f9a4bf40cd2908877a74849b7448a9"
+checksum = "21462749fe0f57028889dcf977146194d00450073c21a981ed1856085cc57c6f"
 dependencies = [
  "anyhow",
  "approx 0.5.1",
@@ -1382,9 +1382,9 @@ dependencies = [
 
 [[package]]
 name = "kittycad-modeling-cmds"
-version = "0.2.97"
+version = "0.2.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c37ad10b8a2afdcd1852d027f123cf4e38864ea93e0fda5c7ee1e8a49af49fb"
+checksum = "fb5a824cb9bb4c602962ecbaca5ce71225938aa1abc24103bf46c222f468dd26"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3999,7 +3999,7 @@ dependencies = [
 
 [[package]]
 name = "zoo-kcl"
-version = "0.3.38"
+version = "0.3.39"
 dependencies = [
  "anyhow",
  "kcl-lib",

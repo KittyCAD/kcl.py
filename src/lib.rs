@@ -114,7 +114,7 @@ pub enum FileExportFormat {
 fn get_output_format(
     format: &FileExportFormat,
     src_unit: kittycad_modeling_cmds::units::UnitLength,
-) -> kittycad_modeling_cmds::format::OutputFormat {
+) -> kittycad_modeling_cmds::format::OutputFormat3d {
     // Zoo co-ordinate system.
     //
     // * Forward: -Y
@@ -133,45 +133,42 @@ fn get_output_format(
 
     match format {
         FileExportFormat::Fbx => {
-            kittycad_modeling_cmds::format::OutputFormat::Fbx(kittycad_modeling_cmds::format::fbx::export::Options {
+            kittycad_modeling_cmds::format::OutputFormat3d::Fbx(kittycad_modeling_cmds::format::fbx::export::Options {
                 storage: kittycad_modeling_cmds::format::fbx::export::Storage::Binary,
                 created: None,
             })
         }
-        FileExportFormat::Glb => {
-            kittycad_modeling_cmds::format::OutputFormat::Gltf(kittycad_modeling_cmds::format::gltf::export::Options {
+        FileExportFormat::Glb => kittycad_modeling_cmds::format::OutputFormat3d::Gltf(
+            kittycad_modeling_cmds::format::gltf::export::Options {
                 storage: kittycad_modeling_cmds::format::gltf::export::Storage::Binary,
                 presentation: kittycad_modeling_cmds::format::gltf::export::Presentation::Compact,
-            })
-        }
-        FileExportFormat::Gltf => {
-            kittycad_modeling_cmds::format::OutputFormat::Gltf(kittycad_modeling_cmds::format::gltf::export::Options {
+            },
+        ),
+        FileExportFormat::Gltf => kittycad_modeling_cmds::format::OutputFormat3d::Gltf(
+            kittycad_modeling_cmds::format::gltf::export::Options {
                 storage: kittycad_modeling_cmds::format::gltf::export::Storage::Embedded,
                 presentation: kittycad_modeling_cmds::format::gltf::export::Presentation::Pretty,
-            })
-        }
+            },
+        ),
         FileExportFormat::Obj => {
-            kittycad_modeling_cmds::format::OutputFormat::Obj(kittycad_modeling_cmds::format::obj::export::Options {
+            kittycad_modeling_cmds::format::OutputFormat3d::Obj(kittycad_modeling_cmds::format::obj::export::Options {
                 coords,
                 units: src_unit,
             })
         }
         FileExportFormat::Ply => {
-            kittycad_modeling_cmds::format::OutputFormat::Ply(kittycad_modeling_cmds::format::ply::export::Options {
+            kittycad_modeling_cmds::format::OutputFormat3d::Ply(kittycad_modeling_cmds::format::ply::export::Options {
                 storage: kittycad_modeling_cmds::format::ply::export::Storage::Ascii,
                 coords,
                 selection: kittycad_modeling_cmds::format::Selection::DefaultScene,
                 units: src_unit,
             })
         }
-        FileExportFormat::Step => {
-            kittycad_modeling_cmds::format::OutputFormat::Step(kittycad_modeling_cmds::format::step::export::Options {
-                coords,
-                created: None,
-            })
-        }
+        FileExportFormat::Step => kittycad_modeling_cmds::format::OutputFormat3d::Step(
+            kittycad_modeling_cmds::format::step::export::Options { coords, created: None },
+        ),
         FileExportFormat::Stl => {
-            kittycad_modeling_cmds::format::OutputFormat::Stl(kittycad_modeling_cmds::format::stl::export::Options {
+            kittycad_modeling_cmds::format::OutputFormat3d::Stl(kittycad_modeling_cmds::format::stl::export::Options {
                 storage: kittycad_modeling_cmds::format::stl::export::Storage::Ascii,
                 coords,
                 units: src_unit,

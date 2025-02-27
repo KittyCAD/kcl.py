@@ -1,6 +1,6 @@
 [package]
 name = "zoo-kcl"
-version = "0.3.38"
+version = "0.3.39"
 edition = "2021"
 repository = "https://github.com/kittycad/kcl.py"
 
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0.95"
-kcl-lib = { version = "0.2.38", features = [
+kcl-lib = { version = "0.2.40", features = [
     "pyo3",
     "engine",
     "disable-println",
