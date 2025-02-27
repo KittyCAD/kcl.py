@@ -9,6 +9,16 @@ kcl_dir_file_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "..", "files"
 )
 
+@pytest.mark.asyncio
+async def test_kcl_execute_with_exception():
+    # Read from a file.
+    try:
+        await kcl.execute(os.path.join(kcl_dir_file_path, "parse_file_error"))
+    except Exception as e:
+        assert e is not None
+        assert len(str(e)) > 0
+        assert "boogers" in str(e)
+
 
 @pytest.mark.asyncio
 async def test_kcl_execute():

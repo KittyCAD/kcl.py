@@ -15,6 +15,22 @@ fn tokio() -> &'static tokio::runtime::Runtime {
     RT.get_or_init(|| tokio::runtime::Runtime::new().unwrap())
 }
 
+fn into_miette(input: &str, error: kcl_lib::KclErrorWithOutputs) -> PyErr {
+    let report = error.clone().into_miette_report_with_outputs(input).unwrap();
+    let report = miette::Report::new(report);
+    pyo3::exceptions::PyException::new_err(format!("{:?}", report))
+}
+
+fn into_miette_for_parse(filename: &str, input: &str, error: kcl_lib::KclError) -> PyErr {
+    let report = kcl_lib::Report {
+        kcl_source: input.to_string(),
+        error: error.clone(),
+        filename: filename.to_string(),
+    };
+    let report = miette::Report::new(report);
+    pyo3::exceptions::PyException::new_err(format!("{:?}", report))
+}
+
 /// The variety of image formats snapshots may be exported to.
 #[derive(Serialize, Deserialize, PartialEq, Hash, Debug, Clone, Copy)]
 #[pyclass(eq, eq_int)]
@@ -218,13 +234,16 @@ async fn execute(path: String) -> PyResult<()> {
             let (code, path) = get_code_and_file_path(&path)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse_no_errs(&code)
+                .map_err(|err| into_miette_for_parse(&path.display().to_string(), &code, err))?;
 
             let (ctx, mut state) = new_context_state(Some(path))
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             Ok(())
         })
@@ -237,13 +256,16 @@ async fn execute(path: String) -> PyResult<()> {
 async fn execute_code(code: String) -> PyResult<()> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program =
+                kcl_lib::Program::parse_no_errs(&code).map_err(|err| into_miette_for_parse("", &code, err))?;
 
             let (ctx, mut state) = new_context_state(None)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             Ok(())
         })
@@ -259,13 +281,16 @@ async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResu
             let (code, path) = get_code_and_file_path(&path)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse_no_errs(&code)
+                .map_err(|err| into_miette_for_parse(&path.display().to_string(), &code, err))?;
 
             let (ctx, mut state) = new_context_state(Some(path))
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             // Zoom to fit.
             ctx.engine
@@ -313,13 +338,16 @@ async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResu
 async fn execute_code_and_snapshot(code: String, image_format: ImageFormat) -> PyResult<Vec<u8>> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program =
+                kcl_lib::Program::parse_no_errs(&code).map_err(|err| into_miette_for_parse("", &code, err))?;
 
             let (ctx, mut state) = new_context_state(None)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             // Zoom to fit.
             ctx.engine
@@ -370,7 +398,8 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
             let (code, path) = get_code_and_file_path(&path)
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program = kcl_lib::Program::parse_no_errs(&code)
+                .map_err(|err| into_miette_for_parse(&path.display().to_string(), &code, err))?;
             let settings = program.meta_settings()?.unwrap_or_default();
             let units: UnitLength = settings.default_length_units.into();
 
@@ -378,7 +407,9 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             // This will not return until there are files.
             let resp = ctx
@@ -411,7 +442,8 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
 async fn execute_code_and_export(code: String, export_format: FileExportFormat) -> PyResult<Vec<ExportFile>> {
     tokio()
         .spawn(async move {
-            let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+            let program =
+                kcl_lib::Program::parse_no_errs(&code).map_err(|err| into_miette_for_parse("", &code, err))?;
             let settings = program.meta_settings()?.unwrap_or_default();
             let units: UnitLength = settings.default_length_units.into();
 
@@ -419,7 +451,9 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
                 .await
                 .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
             // Execute the program.
-            ctx.run(&program, &mut state).await?;
+            ctx.run_with_ui_outputs(&program, &mut state)
+                .await
+                .map_err(|err| into_miette(&code, err))?;
 
             // This will not return until there are files.
             let resp = ctx
@@ -450,7 +484,7 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
 /// Format the kcl code.
 #[pyfunction]
 fn format(code: String) -> PyResult<String> {
-    let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+    let program = kcl_lib::Program::parse_no_errs(&code).map_err(|err| into_miette_for_parse("", &code, err))?;
     let recasted = program.recast();
 
     Ok(recasted)
@@ -459,7 +493,7 @@ fn format(code: String) -> PyResult<String> {
 /// Lint the kcl code.
 #[pyfunction]
 fn lint(code: String) -> PyResult<Vec<Discovered>> {
-    let program = kcl_lib::Program::parse_no_errs(&code).map_err(PyErr::from)?;
+    let program = kcl_lib::Program::parse_no_errs(&code).map_err(|err| into_miette_for_parse("", &code, err))?;
     let lints = program
         .lint(checks::lint_variables)
         .map_err(|err| pyo3::exceptions::PyException::new_err(err.to_string()))?;
