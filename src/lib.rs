@@ -15,8 +15,8 @@ fn tokio() -> &'static tokio::runtime::Runtime {
     RT.get_or_init(|| tokio::runtime::Runtime::new().unwrap())
 }
 
-fn into_miette(input: &str, error: kcl_lib::KclErrorWithOutputs) -> PyErr {
-    let report = error.clone().into_miette_report_with_outputs(input).unwrap();
+fn into_miette(error: kcl_lib::KclErrorWithOutputs) -> PyErr {
+    let report = error.clone().into_miette_report_with_outputs().unwrap();
     let report = miette::Report::new(report);
     pyo3::exceptions::PyException::new_err(format!("{:?}", report))
 }
@@ -243,7 +243,7 @@ async fn execute(path: String) -> PyResult<()> {
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             Ok(())
         })
@@ -265,7 +265,7 @@ async fn execute_code(code: String) -> PyResult<()> {
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             Ok(())
         })
@@ -290,7 +290,7 @@ async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResu
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             // Zoom to fit.
             ctx.engine
@@ -347,7 +347,7 @@ async fn execute_code_and_snapshot(code: String, image_format: ImageFormat) -> P
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             // Zoom to fit.
             ctx.engine
@@ -409,7 +409,7 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             ctx.engine.flush_batch(true, Default::default()).await?;
 
@@ -455,7 +455,7 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(&code, err))?;
+                .map_err(|err| into_miette(err))?;
 
             ctx.engine.flush_batch(true, Default::default()).await?;
 
