@@ -243,7 +243,7 @@ async fn execute(path: String) -> PyResult<()> {
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             Ok(())
         })
@@ -265,7 +265,7 @@ async fn execute_code(code: String) -> PyResult<()> {
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             Ok(())
         })
@@ -290,7 +290,7 @@ async fn execute_and_snapshot(path: String, image_format: ImageFormat) -> PyResu
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             // Zoom to fit.
             ctx.engine
@@ -347,7 +347,7 @@ async fn execute_code_and_snapshot(code: String, image_format: ImageFormat) -> P
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             // Zoom to fit.
             ctx.engine
@@ -409,7 +409,7 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             // This will not return until there are files.
             let resp = ctx
@@ -453,7 +453,7 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
             // Execute the program.
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
-                .map_err(|err| into_miette(err))?;
+                .map_err(into_miette)?;
 
             // This will not return until there are files.
             let resp = ctx
