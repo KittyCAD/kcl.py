@@ -1,3 +1,4 @@
+#![allow(clippy::useless_conversion)]
 use anyhow::Result;
 use kcl_lib::{
     lint::{checks, Discovered},
