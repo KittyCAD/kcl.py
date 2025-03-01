@@ -411,8 +411,6 @@ async fn execute_and_export(path: String, export_format: FileExportFormat) -> Py
                 .await
                 .map_err(|err| into_miette(err))?;
 
-            ctx.engine.flush_batch(true, Default::default()).await?;
-
             // This will not return until there are files.
             let resp = ctx
                 .engine
@@ -456,8 +454,6 @@ async fn execute_code_and_export(code: String, export_format: FileExportFormat) 
             ctx.run_with_ui_outputs(&program, &mut state)
                 .await
                 .map_err(|err| into_miette(err))?;
-
-            ctx.engine.flush_batch(true, Default::default()).await?;
 
             // This will not return until there are files.
             let resp = ctx
