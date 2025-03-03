@@ -1,5 +1,7 @@
 # kcl.py
 
+**This has been moved to [KittyCAD/modeling-app/rust/kcl-python-bindings](https://github.com/KittyCAD/modeling-app/tree/main/rust/kcl-python-bindings)**
+
 Python bindings to the rust kcl-lib crate.
 
 ## Usage
